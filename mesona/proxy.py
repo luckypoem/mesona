@@ -201,7 +201,6 @@ if __name__ == '__main__':
     threads = []
 
     def sigint_received(signum, frame):
-        print 'meh'
         for server in servers:
             server.shutdown()
 
