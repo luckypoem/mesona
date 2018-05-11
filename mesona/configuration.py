@@ -16,7 +16,8 @@ default_settings = {
     "padding_range_with_client": (0, 0),
     "buffer_size": 1024,
     "verify_server_identity": False,
-    "verify_client_identity": False
+    "verify_client_identity": False,
+    "suppress_exceptions": False
 }
 
 # The main configuration.
@@ -93,7 +94,11 @@ NONE:
         "verify_server_identity": False,
 
         # whether to verify our client's identity
-        "verify_client_identity": False
+        "verify_client_identity": False,
+
+        # whether to suppress exceptions during processing of request
+        # note that those exceptions are really annoying
+        "suppress_exceptions": True
     },
 
     ("example.org", 443): {
@@ -137,6 +142,7 @@ NONE:
         "padding_range_with_client": (-128, 256),
         "buffer_size": 4096,
         "verify_server_identity": True,
-        "verify_client_identity": False
+        "verify_client_identity": False,
+        "suppress_exceptions": True
     }
 }

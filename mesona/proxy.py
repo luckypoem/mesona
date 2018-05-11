@@ -46,6 +46,8 @@ class MITMServer(SocketServer.ThreadingTCPServer):
 
     daemon_threads = True
 
+    logging_lock = threading.Lock()
+
     def __init__(self, config, bind_and_activate=True):
         self.config = config
 
@@ -53,6 +55,20 @@ class MITMServer(SocketServer.ThreadingTCPServer):
         self.client_context = TLSContext(config.credentials_as_client, config.priority_string_as_client)
 
         SocketServer.ThreadingTCPServer.__init__(self, config.listen_address, MITMHandler, bind_and_activate)
+
+    def handle_error(self, request, client_address):
+        self.print_exc()
+
+    def print_exc(self):
+        if self.config.suppress_exceptions:
+            return
+
+        with self.logging_lock:
+            print '-'*40
+            print 'Exception happened during processing of request'
+            import traceback
+            traceback.print_exc()
+            print '-'*40
 
 class ForwardingThread(threading.Thread):
     def __init__(self, src, dst, server):
@@ -70,11 +86,12 @@ class ForwardingThread(threading.Thread):
                 forward_connection_with_padding(reader, self.dst, *self.server.config.padding_range_with_client)
             else:
                 forward_connection(reader, self.dst)
-        except (ReaderError, WriterError):
-            self.close_dst()
+        except Exception:
+            self.server.print_exc()
         else:
             self.say_bye_to_dst()
-            self.close_dst()
+
+        self.close_dst()
 
     def say_bye_to_dst(self):
         try:
@@ -144,9 +161,11 @@ class MITMHandler(SocketServer.BaseRequestHandler):
         except ReaderError:
             self.say_bye_to_remote()
             self.close_remote()
+            raise
         except WriterError:
             self.close_remote()
             self.say_bye_to_origin()
+            raise
         else:
             self.say_bye_to_remote()
             self.close_remote()
