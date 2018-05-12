@@ -11,9 +11,11 @@ python -m mesona.proxy
 
 ## Dependencies
 
-* [Python](https://www.python.org/)
+* Python 2.7
 * [GnuTLS](https://gnutls.org/)
 * [python-gnutls](https://github.com/AGProjects/python-gnutls)
+
+Unfortunately python-gnutls does not support Python 3, so Python 2.7 is required.
 
 ## Configuration
 
