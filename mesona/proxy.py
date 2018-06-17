@@ -42,6 +42,11 @@ def forward_connection(reader, dst):
         except GNUTLSError as e:
             raise WriterError(e.message)
 
+def is_ipv6_address(address):
+    # an evil way to tell apart IPv6 addresses
+    ip_address = address[0]
+    return ip_address.startswith('[') and ip_address.endswith(']')
+
 class MITMServer(SocketServer.ThreadingTCPServer):
 
     daemon_threads = True
@@ -50,6 +55,9 @@ class MITMServer(SocketServer.ThreadingTCPServer):
 
     def __init__(self, config, bind_and_activate=True):
         self.config = config
+
+        if is_ipv6_address(config.listen_address):
+            self.address_family = socket.AF_INET6
 
         self.server_context = TLSContext(config.credentials_as_server, config.priority_string_as_server)
         self.client_context = TLSContext(config.credentials_as_client, config.priority_string_as_client)
@@ -132,10 +140,15 @@ class MITMHandler(SocketServer.BaseRequestHandler):
         self.session.handshake()
 
     def build_server_connection(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = self.server.config.server_address
+
+        if is_ipv6_address(server_address):
+            sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        else:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.remote = LengthHidingClientSession(sock, self.server.client_context, self.server.config.server_name_indicator)
-        self.remote.connect(self.server.config.server_address)
+        self.remote.connect(server_address)
         self.remote.handshake()
 
     def verify_client_identity(self):
