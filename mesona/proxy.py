@@ -7,7 +7,6 @@ import time
 from gnutls.connection import TLSContext
 from gnutls.errors import GNUTLSError
 
-from mesona.configuration import settings, default_settings
 from mesona.lengthhiding import LengthHidingClientSession, LengthHidingServerSession
 
 class ReaderError(Exception):
@@ -28,10 +27,16 @@ def connection_reader(src, buffer_size):
 
         yield data
 
+def send_range_safe(dst, data, range_low, range_high):
+    range_low = max(range_low, 1 - len(data))
+    range_high = range_high
+
+    dst.send_range(data, (range_low, range_high))
+
 def forward_connection_with_padding(reader, dst, range_low, range_high):
     for data in reader:
         try:
-            dst.send_range(data, (max(range_low, 1 - len(data)), range_high))
+            send_range_safe(dst, data, range_low, range_high)
         except GNUTLSError as e:
             raise WriterError(e.message)
 
@@ -210,6 +215,8 @@ class MITMSettings():
         self.listen_address = listen_addr
 
 if __name__ == '__main__':
+    from mesona.configuration import settings, default_settings
+
     servers = []
     threads = []
 
