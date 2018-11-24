@@ -146,11 +146,22 @@ class MITMHandler(SocketServer.BaseRequestHandler):
 
     def build_server_connection(self):
         server_address = self.server.config.server_address
+        use_proxy = hasattr(self.server.config, "proxy") and self.server.config.proxy is not None
+
+        if use_proxy:
+            import socks
+            socket_builder = socks.socksocket
+        else:
+            socket_builder = socket.socket
 
         if is_ipv6_address(server_address):
-            sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+            sock = socket_builder(socket.AF_INET6, socket.SOCK_STREAM)
         else:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock = socket_builder(socket.AF_INET, socket.SOCK_STREAM)
+
+        if use_proxy:
+            proxy_type = socks.PROXY_TYPES[self.server.config.proxy[0]]
+            sock.set_proxy(proxy_type, *self.server.config.proxy[1:])
 
         self.remote = LengthHidingClientSession(sock, self.server.client_context, self.server.config.server_name_indicator)
         self.remote.connect(server_address)

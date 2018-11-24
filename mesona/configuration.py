@@ -99,6 +99,11 @@ NONE:
         # whether to suppress exceptions during processing of request
         # note that those exceptions are really annoying
         "suppress_exceptions": True
+
+        # in case you needed to use a proxy
+        # "proxy": ("HTTP", "127.0.0.1", 1080)
+        # "proxy": ("SOCKS4", "127.0.0.1", 1080)
+        # "proxy": ("SOCKS5", "127.0.0.1", 1080)
     },
 
     ("example.org", 443): {

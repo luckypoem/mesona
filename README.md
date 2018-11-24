@@ -14,6 +14,7 @@ python -m mesona.proxy
 * Python 2.7
 * [GnuTLS](https://gnutls.org/)
 * [python-gnutls](https://github.com/nametoolong/python-gnutls)
+* [PySocks](https://github.com/Anorov/PySocks) (only needed when proxy is set)
 
 Unfortunately python-gnutls does not support Python 3, so Python 2.7 is required.
 
