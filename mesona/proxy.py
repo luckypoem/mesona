@@ -235,6 +235,9 @@ if __name__ == '__main__':
         for server in servers:
             server.shutdown()
 
+        import sys
+        sys.exit(0)
+
     for key, setting in settings.items():
         config = MITMSettings(setting["server_address"], setting["listen_address"])
         config.__dict__.update(default_settings)
