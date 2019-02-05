@@ -133,7 +133,7 @@ class MITMHandler(SocketServer.BaseRequestHandler):
         self.build_server_connection()
 
         if self.server.config.verify_server_identity:
-            self.verify_server_ideneity()
+            self.verify_server_identity()
 
         if self.server.config.use_length_hiding_with_server and not self.remote.can_use_length_hiding():
             raise RuntimeError("Can't use length hiding with server")
@@ -171,7 +171,7 @@ class MITMHandler(SocketServer.BaseRequestHandler):
         self.session.verify_peer()
         self.server.config.credentials_as_server.check_certificate(self.session.peer_certificate)
 
-    def verify_server_ideneity(self):
+    def verify_server_identity(self):
         self.remote.verify_peer()
         self.server.config.credentials_as_client.check_certificate(self.remote.peer_certificate)
 
