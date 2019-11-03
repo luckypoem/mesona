@@ -147,6 +147,7 @@ class MITMHandler(SocketServer.BaseRequestHandler):
     def build_server_connection(self):
         server_address = self.server.config.server_address
         use_proxy = hasattr(self.server.config, "proxy") and self.server.config.proxy is not None
+        is_ipv6 = is_ipv6_address(server_address)
 
         if use_proxy:
             import socks
@@ -154,7 +155,7 @@ class MITMHandler(SocketServer.BaseRequestHandler):
         else:
             socket_builder = socket.socket
 
-        if is_ipv6_address(server_address):
+        if is_ipv6:
             sock = socket_builder(socket.AF_INET6, socket.SOCK_STREAM)
         else:
             sock = socket_builder(socket.AF_INET, socket.SOCK_STREAM)
@@ -164,7 +165,12 @@ class MITMHandler(SocketServer.BaseRequestHandler):
             sock.set_proxy(proxy_type, *self.server.config.proxy[1:])
 
         self.remote = LengthHidingClientSession(sock, self.server.client_context, self.server.config.server_name_indicator)
-        self.remote.connect(server_address)
+
+        if is_ipv6:
+            self.remote.connect((server_address[0][1:-1],) + server_address[1:])
+        else:
+            self.remote.connect(server_address)
+
         self.remote.handshake()
 
     def verify_client_identity(self):
