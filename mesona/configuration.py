@@ -23,8 +23,8 @@ default_settings = {
 # The main configuration.
 # Each key-value pair declares a proxy instance.
 settings = {
-    # the key should be the server address (currently ignored) and the value must be a dictionary
-    ("127.0.0.1", 39956): {
+    # the key is the name for the proxy instance and the value must be a dictionary
+    "local-port-39956": {
         # the address we should forward connections to
         "server_address": ("127.0.0.1", 39956),
 
@@ -106,7 +106,7 @@ NONE:
         # "proxy": ("SOCKS5", "127.0.0.1", 1080)
     },
 
-    ("example.org", 443): {
+    "example.org": {
         "server_address": ("example.org", 443),
         "listen_address": ('0.0.0.0', 443),
         "credentials_as_server": X509Credentials(X509Certificate(open("certs/cert.crt").read()), X509PrivateKey(open("certs/key.key").read())),

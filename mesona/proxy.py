@@ -1,7 +1,9 @@
 import signal
 import socket
 import SocketServer
+import sys
 import threading
+import traceback
 import time
 
 from gnutls.connection import TLSContext
@@ -79,7 +81,6 @@ class MITMServer(SocketServer.ThreadingTCPServer):
         with self.logging_lock:
             print '-'*40
             print 'Exception happened during processing of request'
-            import traceback
             traceback.print_exc()
             print '-'*40
 
@@ -241,7 +242,6 @@ if __name__ == '__main__':
         for server in servers:
             server.shutdown()
 
-        import sys
         sys.exit(0)
 
     for key, setting in settings.items():
@@ -249,9 +249,16 @@ if __name__ == '__main__':
         config.__dict__.update(default_settings)
         config.__dict__.update(setting)
 
-        server = MITMServer(config)
-
-        print("Starting listener on {} which forwards to {}".format(config.listen_address, config.server_address))
+        try:
+            server = MITMServer(config)
+        except Exception:
+            print("Could not create proxy instance \"{}\":".format(key))
+            traceback.print_exc()
+            print("\n")
+            continue
+        else:
+            print("Starting listener \"{}\" on {} which forwards to {}".format(
+                key, config.listen_address, config.server_address))
 
         thread = threading.Thread(target=server.serve_forever)
         thread.daemon = True
@@ -260,6 +267,10 @@ if __name__ == '__main__':
 
         servers.append(server)
         threads.append(thread)
+
+    if not servers:
+        print("No proxy instance started, quitting.")
+        sys.exit(0)
 
     signal.signal(signal.SIGINT, sigint_received)
 
