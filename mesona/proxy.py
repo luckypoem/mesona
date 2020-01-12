@@ -270,7 +270,7 @@ if __name__ == '__main__':
 
     if not servers:
         print("No proxy instance started, quitting.")
-        sys.exit(0)
+        sys.exit(1)
 
     signal.signal(signal.SIGINT, sigint_received)
 
